@@ -21,7 +21,7 @@ main(void)
 	const struct test_vector *t;
 	unsigned char *msg, *pub, *sig;
 	size_t msglen, publen, siglen;
-	int rc, i;
+	int rc, i, n, m;
 
 	for (t = tests, i = 0;  t->pub && t->sig; t++, i++) {
 		msg = (unsigned char *)t_msg;
@@ -42,11 +42,19 @@ main(void)
 
 		rc = EVP_DigestVerify(ctx, sig, siglen, msg, msglen);
 		if (rc == 0)
-			fprintf(stderr, "Verify test %d: fail.\n", i);
+			fprintf(stderr, "Verify test %3d: fail   ", i);
 		else if (rc == 1)
-			fprintf(stderr, "Verify test %d: success.\n", i);
+			fprintf(stderr, "Verify test %3d: success", i);
 		else
 			assert("Some error" == NULL);
+
+		n = i / 14;
+		m = i % 14;
+
+		if (n >= 8 || m >= 8)
+			fprintf(stderr, " ( must fail ) %s\n", rc == 1 ? "<---" : "");
+		if (n < 8 && m < 8)
+			fprintf(stderr, " (may succeed)\n");
 
 		EVP_MD_CTX_free(ctx);
 		EVP_PKEY_free(pkey);
